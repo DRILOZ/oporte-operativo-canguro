@@ -1,0 +1,196 @@
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Soporte Express - Canguro VZLA (Dark Mode)</title>
+    <style>
+        /* Paleta de colores Gemini Dark */
+        :root {
+            --bg-color: #131314;
+            --card-bg: #1e1f20;
+            --text-main: #e3e3e3;
+            --text-secondary: #c4c7c5;
+            --accent-blue: #8ab4f8;
+            --accent-red: #f28b82;
+            --accent-green: #81c995;
+            --border-color: #444746;
+        }
+
+        body { 
+            font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif; 
+            padding: 40px 20px; 
+            background-color: var(--bg-color); 
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+        }
+
+        .container { 
+            width: 100%;
+            max-width: 700px; 
+            background: var(--card-bg); 
+            padding: 30px; 
+            border-radius: 24px; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        h1 { 
+            color: var(--text-main); 
+            text-align: center; 
+            font-size: 1.8em; 
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .instrucciones { 
+            text-align: center;
+            font-size: 0.9em; 
+            color: var(--text-secondary); 
+            margin-bottom: 25px; 
+        }
+
+        /* Buscador estilo Gemini */
+        .search-wrapper {
+            position: relative;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 16px 20px; 
+            background-color: transparent;
+            border: 1px solid var(--border-color); 
+            border-radius: 50px; 
+            color: var(--text-main);
+            font-size: 16px; 
+            outline: none; 
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        input:focus { 
+            border-color: var(--accent-blue);
+            background-color: #28292a;
+            box-shadow: 0 0 8px rgba(138, 180, 248, 0.2);
+        }
+
+        /* Tarjetas de resultados */
+        .resultado { 
+            margin-top: 25px;
+            padding: 20px; 
+            border-radius: 16px; 
+            display: none; 
+            animation: fadeIn 0.4s ease;
+        }
+
+        /* Estilo Normal (Verde suave) */
+        .tipo-normal { 
+            background: rgba(129, 201, 149, 0.1);
+            border: 1px solid var(--accent-green);
+        }
+        
+        .tipo-normal h2 { color: var(--accent-green); margin-top: 0; font-size: 1.2em; }
+
+        /* Estilo Escalación (Rojo suave) */
+        .tipo-alerta { 
+            background: rgba(242, 139, 130, 0.1);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pasos-text {
+            line-height: 1.6;
+            white-space: pre-line; /* Mantiene los saltos de línea \n */
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🦘 Soporte Express</h1>
+    <p class="instrucciones">¿En qué podemos ayudar hoy al equipo operativo?</p>
+    
+    <div class="search-wrapper">
+        <input type="text" id="buscador" placeholder="Escribe el problema o palabra clave..." onkeyup="buscar()">
+    </div>
+
+    <div id="pantallaResultado" class="resultado">
+        <h2 id="tituloResultado"></h2>
+        <div id="cuerpoResultado" class="pasos-text"></div>
+    </div>
+</div>
+
+<script>
+const baseConocimiento = [
+    {
+        llave: "servicios simplit pos",
+        titulo: "Restablecer Servicios",
+        cuerpo: "1. Presiona tecla Windows y busca 'Servicios'.\n2. Busca el servicio 'SIMPLIT POS'.\n3. Si está detenido, presiona ACTIVAR. Si ya está activo, presiona REINICIAR.", 
+        escalar: false
+    },
+    {
+        llave: "biometrico huella sensor",
+        titulo: "Falla de Biométrico",
+        cuerpo: "⚠️ Los casos de biométrico deben ser reportados al equipo de SOPORTE TI - REDES.",
+        escalar: true
+    },
+    {
+        llave: "maestro caja sincronizacion",
+        titulo: "Sincronización de Maestro (Caja 2)",
+        cuerpo: "Nota: Caja 1 jala del servidor y Caja 2 jala de Caja 1.\n\n1. Entrar a CAJA 1 vía Anydesk.\n2. Abrir AUDITOR en Simplit POS.\n3. Fuera de Línea > Maestro > Sincronizar (Botón Verde).\n4. Repetir proceso en CAJA 2.",
+        escalar: false
+    },
+    {
+        llave: "credenciales odoo drive",
+        titulo: "Credenciales de Odoo",
+        cuerpo: "1. Ingresa al Drive con el perfil de Soporte Operativo.\n2. Busca el nombre de la sede.\n3. Copia y envía los accesos a la sede solicitante.",
+        escalar: false
+    },
+    {
+        llave: "tesoreria modulo",
+        titulo: "Falla en Módulo de Tesorería",
+        cuerpo: "⚠️ Estos casos corresponden al equipo de GESTIÓN DE DESARROLLO.",
+        escalar: true
+    }
+];
+
+function buscar() {
+    const query = document.getElementById("buscador").value.toLowerCase();
+    const pantalla = document.getElementById("pantallaResultado");
+    const titulo = document.getElementById("tituloResultado");
+    const cuerpo = document.getElementById("cuerpoResultado");
+
+    if (query.length < 3) {
+        pantalla.style.display = "none";
+        return;
+    }
+
+    const hallazgo = baseConocimiento.find(item => item.llave.includes(query));
+
+    if (hallazgo) {
+        pantalla.style.display = "block";
+        titulo.innerText = hallazgo.titulo;
+        cuerpo.innerText = hallazgo.cuerpo;
+
+        if (hallazgo.escalar) {
+            pantalla.className = "resultado tipo-alerta";
+            titulo.style.display = "none"; // Ocultamos título en alertas para resaltar el mensaje
+        } else {
+            pantalla.className = "resultado tipo-normal";
+            titulo.style.display = "block";
+        }
+    } else {
+        pantalla.style.display = "none";
+    }
+}
+</script>
+
+</body>
+</html>
